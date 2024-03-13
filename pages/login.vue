@@ -38,30 +38,30 @@
         },
         methods: {
             async actionLogin() {
-                // this.$store.dispatch('loading/actionShowLoading')
-                // let formData = new FormData()
-                // formData.append('username', this.username)
-                // formData.append('password', this.password)
-                // var login = false
-                // try {
-                //     login = await this.$axios.$post('vedita-login', formData)
-                // }
-                // catch(error) {
-                //     alert(error)
-                //     window.location.href = process.env.VEDITA_API_BASE_URL
-                // }
-                // this.$store.dispatch('loading/actionHideLoading')
-                // if (login == false) return
-                // if (login.status_code == 200) {
-                //     const {data} = login
-                //     const {token} = data
-                //     const cipherText = CryptoJS.AES.encrypt(token, process.env.SALT_KEY).toString()
-                //     this.$store.dispatch('auth/actionSetCredentials', token)
-                //     this.$cookies.set("credentials", cipherText, {
-                //        path: "/",
-                //     });
+                this.$store.dispatch('loading/actionShowLoading')
+                let formData = new FormData()
+                formData.append('username', this.username)
+                formData.append('password', this.password)
+                var login = false
+                try {
+                    login = await this.$axios.$post('vedita-login', formData)
+                }
+                catch(error) {
+                    alert(error)
+                    window.location.href = process.env.VEDITA_API_BASE_URL
+                }
+                this.$store.dispatch('loading/actionHideLoading')
+                if (login == false) return
+                if (login.status_code == 200) {
+                    const {data} = login
+                    const {token} = data
+                    const cipherText = CryptoJS.AES.encrypt(token, process.env.SALT_KEY).toString()
+                    this.$store.dispatch('auth/actionSetCredentials', token)
+                    this.$cookies.set("credentials", cipherText, {
+                       path: "/",
+                    });
                     this.$router.push('/')
-                // }
+                }
             }
         },
         head() {
