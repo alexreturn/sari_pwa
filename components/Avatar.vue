@@ -628,7 +628,8 @@
                 this.handleVoiceCommands(data)
             },
             handleVoiceCommands(data) {
-                const {tag} = data
+                // const {tag} = data
+                const tag = "unknown"
                 let response_text = data['response_text']
                 console.log(response_text)
                 
