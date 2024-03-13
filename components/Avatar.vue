@@ -41,7 +41,7 @@
                     <input class="form-control w-50" v-model="textInput" placeholder="Type your text...">
                 </div>
                 <div class="d-flex justify-content-center align-items-center">
-                    <button class="btn btn-primary w-50" @click="actionRequestVedita()">Speak</button>
+                    <button class="btn btn-primary w-50" @click="actionRequestVedita()">Speaking</button>
                 </div>
                 <!-- <div class="d-flex justify-content-center align-items-center mb-2">
                     <button class="btn btn-primary" @click="actionPlayAnim()">Submit</button>
