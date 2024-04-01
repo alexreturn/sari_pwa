@@ -32,8 +32,8 @@
         middleware: ['authenticated'],
         data() {
             return {
-                username: "",
-                password: ""
+                username: "sari_datacenter",
+                password: "S4r1M0b1le1_2023"
             }
         },
         methods: {

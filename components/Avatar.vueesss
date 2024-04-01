@@ -102,18 +102,13 @@
     import data from "../static/json/spritesheet.json"
     import constant from '../config/constant'
 
-    let intervalId;
-    let currentIndex = 0;
-    
     export default {
         data() {
             return {
                 Game: null,
-                textInput: "saya bangun pagi hari mencari cinta",
+                textInput: "",
                 selectedSprite: [],
                 spriteAnim: [],
-                framerateSound: [],
-                framerateDuration: [],
                 phaserObj: null,
                 isAnimPlay: false,
                 synth: null,
@@ -322,7 +317,7 @@
                 this.isRecognizing = 0
             },
             loadText(text) {
-                this.textToSpeak  = text
+                this.speakSynthesis.text = text
             },
             speak() {
                 window.speechSynthesis.cancel();
@@ -333,8 +328,8 @@
                 let nuxtObj = this
                 const config = {
                     type: Phaser.AUTO,
-                    width: 293 + 600,
-                    height: 335 + 900,
+                    width: 295 + 600,
+                    height: 337 + 900,
                     transparent: true,
                     scene: {
                         preload: preload,
@@ -346,15 +341,14 @@
                 }
                 function create() {
                     nuxtObj.phaserObj = this
-                    const sprite = this.add.sprite(293, 335, 'main_sprite');
+                    const sprite = this.add.sprite(295, 337, 'main_sprite');
                     this.anims.create({
                         key: 'main_sprite_1',
                         frames: this.anims.generateFrameNumbers('main_sprite', { start: idle_sprite['frameStart'], end: idle_sprite['frameEnd'] }),
                         frameRate: 15,
                         repeat: -1 // Loop indefinitely
                     });
-                    // sprite.x -= 2;
-                    // sprite.anims.play('main_sprite_1', true);
+                    sprite.anims.play('main_sprite_1', true);
                     document.querySelector('canvas').classList.add('avatar-canvas')
                     if(sessionStorage.getItem("sariBody") === null || sessionStorage.getItem("sariBody") == 1) {
                         document.querySelector('canvas').classList.add('body-grapari')
@@ -377,9 +371,9 @@
                 const game = new Phaser.Game(config)
                 this.Game = game
             },
-            getSyllables(response_text) {
-                if(response_text == "") return false
-                let inputText = response_text
+            getSyllables() {
+                if(this.speakSynthesis.text == "") return false
+                let inputText = this.speakSynthesis.text
                 let words = inputText.split(' ')
                 const vowels = ['A', 'I', 'U', 'E', 'O']
                 const syllables = []
@@ -388,41 +382,40 @@
                     let pos = 0;
                     try {
                         for (let i = 0; i < word.length; i++) {
-                            if (i < pos) continue;
+                        if (i < pos) continue;
 
-                            if (vowels.includes(word[pos].toUpperCase())) {
-                                w.push(word[pos]);
-                                pos = pos + 1;
-                            } else if ((word[pos] + word[pos + 1] === "ng" ||
-                                word[pos] + word[pos + 1] === "ny")) {
-                                if (vowels.includes(word[pos + 2].toUpperCase())) {
-                                w.push(word[pos + 2]);
-                                pos = pos + 3;
-                                } else if (!vowels.includes(word[pos + 2].toUpperCase()) &&
-                                    vowels.includes(word[pos + 3].toUpperCase())) {
-                                w.push(word[pos + 2] + word[pos + 3]);
-                                pos = pos + 4;
-                                }
-                            } else if (!vowels.includes(word[pos].toUpperCase())) {
-                                if (vowels.includes(word[pos + 1].toUpperCase())) {
-                                w.push(word[pos] + word[pos + 1]);
-                                pos = pos + 2;
-                                } else if (!vowels.includes(word[pos + 1].toUpperCase()) &&
-                                    vowels.includes(word[pos + 2].toUpperCase())) {
-                                if (word[pos + 1].toLowerCase() === "h" ||
-                                    word[pos + 1].toLowerCase() === "r") {
-                                    w.push(word[pos] + word[pos + 2]);
-                                    pos = pos + 3;
-                                } else {
-                                    w.push(word[pos + 1] + word[pos + 2]);
-                                    pos = pos + 3;
-                                }
-                                }
+                        if (vowels.includes(word[pos].toUpperCase())) {
+                            w.push(word[pos]);
+                            pos = pos + 1;
+                        } else if ((word[pos] + word[pos + 1] === "ng" ||
+                            word[pos] + word[pos + 1] === "ny")) {
+                            if (vowels.includes(word[pos + 2].toUpperCase())) {
+                            w.push(word[pos + 2]);
+                            pos = pos + 3;
+                            } else if (!vowels.includes(word[pos + 2].toUpperCase()) &&
+                                vowels.includes(word[pos + 3].toUpperCase())) {
+                            w.push(word[pos + 2] + word[pos + 3]);
+                            pos = pos + 4;
                             }
+                        } else if (!vowels.includes(word[pos].toUpperCase())) {
+                            if (vowels.includes(word[pos + 1].toUpperCase())) {
+                            w.push(word[pos] + word[pos + 1]);
+                            pos = pos + 2;
+                            } else if (!vowels.includes(word[pos + 1].toUpperCase()) &&
+                                vowels.includes(word[pos + 2].toUpperCase())) {
+                            if (word[pos + 1].toLowerCase() === "h" ||
+                                word[pos + 1].toLowerCase() === "r") {
+                                w.push(word[pos] + word[pos + 2]);
+                                pos = pos + 3;
+                            } else {
+                                w.push(word[pos + 1] + word[pos + 2]);
+                                pos = pos + 3;
+                            }
+                            }
+                        }
                         }
                     } catch (e) {
                     }
-                    console.log("sylll dapat ",w)
                     syllables.push(w);
                 });
 
@@ -454,126 +447,12 @@
                 const objectURL = URL.createObjectURL(blob)
                 return objectURL
             },
-            async randomUcapan(){
- // Array dari beberapa kalimat yang akan dipilih secara acak
- const randomSentences = [
-                    [
-                        "Mohon tunggu sebentar ya ka",
-                        "halo ka, tunggu sebentar ya",
-                        "Silahkan tunggu",
-                        "Sebentar ya ka Sari bantu jawab",
-                        "Hai, apa kabar ka? mohon ditunggu ya jawabannya",
-                        "Sebentar ya ka",
-                        "Okay ka, Tunggu sebentar ya",
-                        "Mohon tunggu ya ka",
-                        "Tunggu sebentar ya ka",
-                        "hai ka, Sari cari tau dulu ya",
-                    ],
-                    [
-                        "Sari sedang memastikan jawaban yang tepat untuk kakak",
-                        "Sari sedang memproses jawabannya ni kak",
-                        "Sari lagi mencari jawaban yang pas untuk kakak",
-                        "Sari lagi proses buat kasi jawabannya kak",
-                        "informasi yang dibutuhkan sedang diproses ya kak",  
-                        "Sari saat ini sedang memproses jawabannya",  
-                    ],
-                ];
-            let nuxtObj = this
-            // console.log(currentIndex+ " COBAK KLENF "+randomSentences[2][1]);
-            if (currentIndex === randomSentences.length) {
-                currentIndex=1;
-            }
-            let currentArray = randomSentences[0];
-            currentArray = randomSentences[currentIndex];
-
-            const randomIndex = Math.floor(Math.random() * currentArray.length);
-            const randomSentence = currentArray[randomIndex];
-            console.log(randomSentence);
-            currentIndex++;
-
-            const formData = new FormData();
-            formData.append('text', randomSentence);
-            let audio_request = await this.$axios.$post('vedita-tts2', formData)
-                const audio_b64 = audio_request['audio_base64']; 
-                const objectURL = this.convertB64ToMp3(audio_b64);
-                this.loadAudio(objectURL);
-
-                nuxtObj.playAudio()
-        },
             async actionPlayAnim() {
-               
-               
-                // setTimeout(() => {
-                //    console.log("ok tunggu")
-                // }, 10000)
-
-                if(this.isAnimPlay || this.textToSpeak  == "") return
-
-                console.log("MASUK DI ACTION PLAY ANIM", this.textToSpeak)
+                if(this.isAnimPlay || this.speakSynthesis.text == "") return
                 this.isAnimPlay = true
-                const syllables = this.getSyllables( this.textToSpeak)
+                const syllables = this.getSyllables()
                 let nuxtObj = this
 
-                nuxtObj.selectedSprite.splice(0, nuxtObj.selectedSprite.length);
-                nuxtObj.spriteAnim.splice(0, nuxtObj.spriteAnim.length);
-
-                let formData = new FormData()
-                formData.append('text', this.textToSpeak)
-                formData.append('language', "ID")
-                formData.append('audio_provider', 'microsoft')
-                formData.append('audio_voice_id', 'id-ID-GadisNeural')
-                // var audio_request = null;
-                let audio_request = await this.$axios.$post('vedita-tts2', formData)
-                
-                    const { audio_b64, durasi,original_text } = audio_request['data']
-                    console.log("original_text",original_text)
-                    console.log("audio_b64",audio_b64)
-                    const objectURL = this.convertB64ToMp3(audio_b64)
-                    await clearInterval(intervalId); /// hapus pengulangan
-                    // await this.delay(4000);
-                    setTimeout(() =>{
-                        console.log("delayyy duluh, biar gak tabrakan hehe2");
-                    }, 10000);
-                    this.loadAudio(objectURL)
-                
-                // const dataToSend = {
-                //         data: this.textinput  // Add your data here
-                //         };
-                // let audio_request = await this.$axios.$get(`http://localhost:8000/get-iris?data=${this.textToSpeak}`, {
-                //         params: dataToSend
-                //     });
-                //     await clearInterval(intervalId); /// hapus pengulangan
-                //         // await this.delay(4000);
-                //         setTimeout(() =>{
-                //                     console.log("delayyy duluh, biar gak tabrakan hehe2");
-                //                 }, 10000);
-                //     // console.log("get data from arraysss ",audio_request['words'])
-                //     // console.log("get data from framerate ",audio_request['framerate'])
-                //     // console.log("get data from durasi ",audio_request['durasi'])
-                //     this.framerateSound = audio_request['framerate']
-                //     this.framerateDuration = audio_request['durasi']
-                //     // console.log("get data from syllables ",audio_request['syllables'])
-                //     const audio_b64 = audio_request['audio_base64']; // Access the audio_base64 directly
-                //     // console.log("get data from array",audio_b64)
-                //     this.worldarray = audio_request['words'];
-
-                //     // // console.log("framerateeee", this.framerateSound)
-                //     const objectURL = this.convertB64ToMp3(audio_b64);
-                 
-                                
-                //     await this.loadAudio(objectURL);
-                    // const syllables = audio_request['syllables']
-                    // console.log("syllables",syllables)
-                    // console.log("syllables2",this.getSyllables())
-
-                    
-                            
-
-
-
-                    
-                    // const objectURL = this.convertB64ToMp3(audio_b64);
-                    
                 // let formData = new FormData()
                 // formData.append('text', this.textInput)
                 // formData.append('language', "ID")
@@ -733,13 +612,12 @@
                             if(v == "ky") {
                                 v = "gy"
                             }
-                            // console.log("animasi dapat ", v)
                             nuxtObj.selectedSprite.push(v)
                             nuxtObj.spriteAnim.push(v)
                         })
                     }
                 })
-              
+                
                 class LoadSprite extends Phaser.Scene
                 {
                     constructor ()
@@ -753,77 +631,30 @@
                         })  
                     }
                     create() {
-
-                       
-                        
                         let sprite = null
                         let spriteObj = this
-                        let durasiSyll = []
-
-                      
-                        console.log("syllables",syllables)
-                        console.log("syllables[i].length;",syllables.length)
-                        console.log("durasi",durasi)
-                        console.log("durasi.length",durasi.length)
-                        console.log("nuxtObj.selectedSprite",nuxtObj.selectedSprite)
-                        console.log("nuxtObj.selectedSprite.length",nuxtObj.selectedSprite.length)
-
-                        try{
-                            for (let i = 0; i < durasi.length; i++) {
-                                console.log(" audio_request['durasi'][i] ",durasi[i])
-                                for (let j = 0; j <  syllables[i].length; j++) {  
-                                    console.log("syllables[i][j].length",syllables[i][j].length)
-                                    durasiSyll.push( durasi[i]/syllables[i][j].length || 0.419);
-                                }
-                            }
-                        }catch(error){
-                            console.log("",error)
-                        }
-                        
                         nuxtObj.selectedSprite.forEach((value, index) => {
                             if(index == 0) {
                                 sprite = this.add.sprite(295, 337, value);
                             }
-                            
-                            // console.log("valuee create animate", value)
-                            // console.log("index create animate", index)
-                            const framestart =data[value]['frameStart']
-                            const frameend =data[value]['frameEnd']
-                            const totalFrame = frameend - framestart
-
-                            
-
-                            // console.log("framestart",framestart)
-                            // console.log("frameend",frameend)
-                            // console.log("totalFrame",totalFrame)
-                            // console.log("durasiSyll[index]*totalFrame)*30 ",(durasiSyll[index]*totalFrame)*30 )
-
+                            console.log("valuee create animate", value)
+                            console.log("index create animate", index)
+                            const vowels = [237.0/3, 237.0/2, 158.0/2, 158.0/2, 158.0/2, 237.0/2, 237.0/3]
                             this.anims.create({
                                 key: value,
                                 frames: this.anims.generateFrameNumbers(value, { start: data[value]['frameStart'], end: data[value]['frameEnd'] }),
-                                frameRate: (durasiSyll[index]*(data[value]['frameEnd']-data[value]['frameStart']))*20 || 37,
-                                // frameRate:  10,
+                                frameRate: vowels[index] || 37,
                             });
-                            // console.log("viwels index", vowels[index]/5 +" "+index )
-                            console.log("LOGGGSSS", (durasiSyll[index]*totalFrame)*10 || 37)
-
                             if(index == 0) {
-                                // nuxtObj.speak()
-                                nuxtObj.playAudio()
+                                nuxtObj.speak()
                                 sprite.anims.play(value, true);
+                                // nuxtObj.playAudio()
                             }
                         })
                         // Play the next spritesheet
-                        async function delay(ms) {
-                            return await new Promise(resolve => setTimeout(resolve, ms));
-                        }
-                        async function playNext() {
-                                if(nuxtObj.selectedSprite.length <= 0 || nuxtObj.selectedSprite.length == 1) {
-                                  
-                               
+                        function playNext() {
+                            if(nuxtObj.selectedSprite.length <= 0 || nuxtObj.selectedSprite.length == 1) {
                                 nuxtObj.Game.scene.remove('speak')
-
-                                // await delay(1000);
                                 nuxtObj.spriteAnim.forEach((value) => {
                                     nuxtObj.Game.anims.remove(value)
                                 })
@@ -831,31 +662,22 @@
                                 sprite.destroy()
                                 nuxtObj.isAnimPlay = false
                                 nuxtObj.actionStopRecognize()
-
                                 console.log("THIS IS A TEST")
-                                currentIndex = 0
-                                
                                 return
                             }
                             sprite = spriteObj.add.sprite(295, 337, nuxtObj.selectedSprite[0])
                             sprite.anims.play(nuxtObj.selectedSprite[0], true)
                             sprite.setTexture(nuxtObj.selectedSprite[0])
                             sprite.on('animationcomplete', function() {
-                               
                                 if(nuxtObj.selectedSprite.length <= 0) return
-                                
                                 nuxtObj.selectedSprite.shift()
                                 playNext()
                             }) 
-                           
                         }
 
                         sprite.on('animationcomplete', function() {
                             playNext()
                             nuxtObj.selectedSprite.shift()
-                            if (nuxtObj.selectedSprite.length === 1) {
-                                console.log("akhirr",nuxtObj.selectedSprite.length)
-                            }
                         })
                     }
                 }
@@ -882,11 +704,11 @@
             },
             async actionRequestVedita() {
                 this.actionBusy()
-                // this.$store.dispatch('loading/actionShowLoading')
+                this.$store.dispatch('loading/actionShowLoading')
                 var result = null;
                 let data = []
                 if(this.textInput.toLowerCase().startsWith('ganti skin')) {
-                    // this.$store.dispatch('loading/actionHideLoading')
+                    this.$store.dispatch('loading/actionHideLoading')
                     let sariBody = document.querySelector('canvas.avatar-canvas')
                     this.actionStopRecognize()
                     if(sariBody === null) return
@@ -944,24 +766,17 @@
                         data = result
                     }
                 }
-                    const specificPhrases = ["perkenalkan diri", "siapa namamu", "siapa kamu","siapa nama", "siapa dirimu","apa kabarmu","apa kabar","kabar","direktur","namamu","pantun", "kata mutiara","quotes","seputar telkomsel", "terima kasih","halo vedita", "hai vedita"];
-                    const containsSpecificPhrase = specificPhrases.some(phrase => this.textInput.toLowerCase().includes(phrase));
-                    if (containsSpecificPhrase) {
-                    }else{
-                        // intervalId = await setInterval(async() => await this.randomUcapan(), 6000); 
-                    }
+                this.$store.dispatch('loading/actionHideLoading')
                 if (result == false && data.length == 0) return
                 this.handleVoiceCommands(data)
             },
-            async handleVoiceCommands(data) {
-                const {tag} = data
-                // const tag = "unknown"
-                let response_text = data['response_text']
-                // let response_text = "halo kak ada yang bisa saya bantu?"
+            handleVoiceCommands(data) {
+                // const {tag} = data
+                const tag = "unknown"
+                // let response_text = data['response_text']
+                let response_text = "halo kak ada yang bisa saya bantu?"
                 console.log("response_text",response_text)
-                console.log("response tag",tag)
                 
-                // this.actionPlayAnim(response_text)
                 if(tag == "telpon") {
                     response_text = "Maaf, untuk sementara ini SARI PWA tidak dapat melakukan panggilan telepon"
                 }
@@ -972,15 +787,14 @@
                     this.actionPlayAnim()
                 }
                 if(tag == "unknown") {
-                   
-                    // this.$store.dispatch('loading/actionShowLoading')
+                    this.$store.dispatch('loading/actionShowLoading')
                     
                     const payload = JSON.stringify({
                         'model': "gpt-3.5-turbo",
                         'messages': [
                             {
                                 "role": "system", 
-                                "content": "Kamu adalah SARI, bila ada yang bertanya selalu sebut dengan nama Kak, bila ada yang bertanya siapa kamu, atau siapa namamu, jawab dengan perkenalkan nama saya SARI, saya adalah Digital Assistance. Bila ada yang bertanya bisa pantun, jawab dengan Oke, bisa. Makan lalapan sayurnya kemangi. Kalau butuh bantuan, SARI siap melayani! Bila ada yang berkata terima kasih, jawab dengan salah satu kalimat berikut dengan senang hati kak, sama-sama kak, atau senang bisa membantu. Bila ada yang bertanya spesifik tentang Laptopku lemot jawab dengan Tenang, jangan emosi kak. Coba tekan windows + R kemudian ketik %temp% hapus semua temporary datanya, setelah itu buka task manager dan end task semua yang prosesnya tinggi. Bila ada yang bertanya kabar, jawab dengan Hari ini aku sangat bahagia sekali, karena aku bisa ngobrol sama banyak orang. Bila ada yang bertanya Siapa nama Direktur Utama Telkomsel, jawab dengan Direktur Utama Telkomsel saat ini adalah Bapak Nugroho, atau yang biasa dipanggil Pak Nugi. Bila ada yang bertanya Siapa nama Direktur IT Telkomsel, jawab dengan Direktur IT Telkomsel saat ini adalah Bapak Bharat Alva, atau yang biasa dipanggil Pak Alva. Bila ada yang bertanya Siapa nama Direktur Sales Telkomsel, jawab dengan Direktur Sales Telkomsel saat ini adalah Bapak Adiwinahyu Basuki Sigit, atau yang biasa dipanggil pak Sigit. Bila ada yang bertanya Siapa nama Direktur Marketing Telkomsel, jawab dengan Direktur Marketing Telkomsel saat ini adalah Bapak Derrick. Bila ada yang bertanya Siapa nama Direktur Network Telkomsel, jawab dengan Direktur Network Telkomsel saat ini adalah Bapak Indra Mardiatna, atau yang biasa dipanggil pak Indram. Bila ada yang bertanya Siapa nama Direktur HCM Telkomsel, jawab dengan Direktur HCM Telkomsel saat ini adalah Bapak Muharam Perbawamukti, atau yang biasa dipanggil pak Endi. Bila ada yang bertanya Siapa nama Direktur Planning & transformation Telkomsel, jawab dengan Direktur Planning dan transformasi Telkomsel saat ini adalah Bapak Muharam Perbawamukti, atau yang biasa dipanggil pak Endi. Jika ada yang bertanya, selalu panggil dengan nama Kak dan jawab dengan yang singkat dan jelas ya. Jika ada yang bertanya solusi laptop panas, jawab dengan, Baik kak saran dari SARI, untuk atasi laptop yang sering panas, coba bersihkan ventilasi secara berkala dan gunakan alas pendingin. Selain itu, atur manajemen daya, tutup aplikasi yang tidak dipakai, dan periksa keberadaan malware. Selalu perbarui driver perangkat keras dan hindari menggunakan laptop di permukaan lunak. Kalau bisa, ganti pasta thermal pada prosesor untuk tingkatkan konduktivitas panas ya kak. Jika ada yang bertanya kata mutiara atau quotes, jawab dengan Semuanya bisa menjadi mungkin jika kau memiliki kedamaian batin. Begitu kata Master Shifu. Jika ada yang bertanya seputar telkomsel, jawab dengan Telkomsel Sebagai salah satu operator telekomunikasi terbesar di Indonesia, Telkomsel memiliki jangkauan jaringan yang luas dan telah menjadi pilihan utama bagi banyak pengguna telekomunikasi, Visi Telkomsel Menjadi penyedia layanan dan solusi gaya hidup digital mobile kelas dunia yang terpercaya. Misi Telkomsel Memberikan layanan dan solusi digital mobile yang melebihi ekspektasi para pengguna, menciptakan nilai lebih bagi para pemegang saham, serta mendukung pertumbuhan ekonomi bangsa. Bila ada yang bertanya WA ga bisa dibuka, atau solusi whatsapp error, maka jawab dengan: sebelumnya, dita sarankan untuk memakai whatsapp dari browser. Jika whatsapp error, coba clear cache serta cookie browser, dan update browsernya. Tutup browser, lalu buka kembali dan coba lagi untuk membuka whatsapnya. Bila ada yang bertanya tentang tips baterai awet atau cara agar baterai laptop awet, jawab dengan Kak, agar baterai laptop awet, hindari penggunaan pada suhu ekstrem. Isi daya saat mencapai 20-80%, hindari pengisian semalaman. Gunakan charger asli, perbarui sistem operasi, dan matikan fitur yang tidak perlu. Identifikasi aplikasi boros daya, hindari menjalankan laptop hingga baterai sangat rendah. Ini membantu menjaga daya tahan baterai laptop Anda. Bila ada yang bertanya siapa bos atau atasanmu? jawab dengan Atasan atau Bos saya adalah Pak Rollan. Setiap jawaban maksimal 300 huruf"
+                                "content": "You are a helpful assistant, you give answer as short as possible"
                             },
                             {
                                 "role": "user",
@@ -1006,13 +820,13 @@
                         const {choices} = result
                         const message = choices[0]['message']['content']
                         this.loadText(message)
-                        // this.speak()
+                        this.speak()
                         this.actionPlayAnim()
-                        // this.$store.dispatch('loading/actionHideLoading')
+                        this.$store.dispatch('loading/actionHideLoading')
                     })
                     .catch((error) => {
                         alert("Error occured while connecting to OpenAI API")
-                        // this.$store.dispatch('loading/actionHideLoading')
+                        this.$store.dispatch('loading/actionHideLoading')
                     })
                 }
 
